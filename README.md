@@ -1,6 +1,39 @@
-# 💚 Health Insights - iPhone Web App
+# 💚 Health Insights
 
-A Progressive Web App (PWA) that syncs with Apple Health data to provide personalized daily and on-demand health insights.
+Get personalized daily and on-demand health insights from your Apple Health data.
+
+## 🎯 Two Options Available
+
+### Option 1: Native iOS App (Recommended) ⭐
+**Automatic sync with Apple Health** - No manual imports needed!
+
+📱 Located in: `/HealthInsights/`
+
+**Features:**
+- ✅ Automatic real-time sync with HealthKit
+- ✅ Background updates
+- ✅ Native iOS performance
+- ✅ No manual file exports required
+- ✅ Best user experience
+
+[**→ See Native iOS App Documentation**](./HealthInsights/README.md)
+
+### Option 2: Progressive Web App
+**Manual import** - Works anywhere but requires export files
+
+🌐 Located in: Root directory
+
+**Features:**
+- ✅ Works on any device with a browser
+- ✅ No App Store required
+- ✅ Install as PWA
+- ⚠️ Requires manual Apple Health export
+
+---
+
+## Progressive Web App (PWA)
+
+A Progressive Web App that works with imported Apple Health data to provide personalized health insights.
 
 ## Features
 
