@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Health Insights">
+    <meta name="theme-color" content="#FF2D55">
+    <title>Health Insights</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+    <div id="app" class="app">
+        <!-- Header -->
+        <header class="header">
+            <h1>💚 Health Insights</h1>
+            <button id="menuBtn" class="menu-btn">⚙️</button>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav">
+            <button class="nav-btn active" data-view="dashboard">Dashboard</button>
+            <button class="nav-btn" data-view="insights">Insights</button>
+            <button class="nav-btn" data-view="trends">Trends</button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Dashboard View -->
+            <section id="dashboard" class="view active">
+                <div class="welcome-card card">
+                    <h2>Welcome Back!</h2>
+                    <p class="date" id="currentDate"></p>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card card">
+                        <div class="stat-icon">🚶</div>
+                        <div class="stat-value" id="stepsToday">--</div>
+                        <div class="stat-label">Steps Today</div>
+                    </div>
+                    <div class="stat-card card">
+                        <div class="stat-icon">💓</div>
+                        <div class="stat-value" id="heartRate">--</div>
+                        <div class="stat-label">Heart Rate</div>
+                    </div>
+                    <div class="stat-card card">
+                        <div class="stat-icon">😴</div>
+                        <div class="stat-value" id="sleep">--</div>
+                        <div class="stat-label">Sleep</div>
+                    </div>
+                    <div class="stat-card card">
+                        <div class="stat-icon">🔥</div>
+                        <div class="stat-value" id="calories">--</div>
+                        <div class="stat-label">Calories</div>
+                    </div>
+                </div>
+
+                <!-- Daily Summary -->
+                <div class="card">
+                    <h3>Today's Summary</h3>
+                    <div id="dailySummary" class="summary-content">
+                        <p class="loading">Loading your health data...</p>
+                    </div>
+                </div>
+
+                <!-- Import Data Button -->
+                <button id="importBtn" class="primary-btn">
+                    📥 Import Apple Health Data
+                </button>
+            </section>
+
+            <!-- Insights View -->
+            <section id="insights" class="view">
+                <div class="card">
+                    <h2>Health Insights</h2>
+                    <button id="generateInsightsBtn" class="primary-btn">
+                        ✨ Generate Insights
+                    </button>
+                    <div id="insightsContent" class="insights-content">
+                        <p class="placeholder">Click "Generate Insights" to analyze your health data</p>
+                    </div>
+                </div>
+
+                <!-- Insights Cards -->
+                <div id="insightCards" class="insight-cards"></div>
+            </section>
+
+            <!-- Trends View -->
+            <section id="trends" class="view">
+                <div class="card">
+                    <h2>Health Trends</h2>
+                    <div class="chart-controls">
+                        <select id="metricSelect" class="select">
+                            <option value="steps">Steps</option>
+                            <option value="heartRate">Heart Rate</option>
+                            <option value="sleep">Sleep</option>
+                            <option value="activeEnergy">Active Calories</option>
+                        </select>
+                        <select id="periodSelect" class="select">
+                            <option value="7">Last 7 Days</option>
+                            <option value="14">Last 14 Days</option>
+                            <option value="30">Last 30 Days</option>
+                        </select>
+                    </div>
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </section>
+        </main>
+
+        <!-- Settings Modal -->
+        <div id="settingsModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Settings</h2>
+                    <button class="close-btn" id="closeSettings">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="setting-item">
+                        <label>Daily Insights Time</label>
+                        <input type="time" id="insightTime" value="09:00">
+                    </div>
+                    <div class="setting-item">
+                        <label>Enable Notifications</label>
+                        <input type="checkbox" id="notificationsEnabled">
+                    </div>
+                    <div class="setting-item">
+                        <button id="exportDataBtn" class="secondary-btn">Export Data</button>
+                    </div>
+                    <div class="setting-item">
+                        <button id="clearDataBtn" class="danger-btn">Clear All Data</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Import Modal -->
+        <div id="importModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Import Apple Health Data</h2>
+                    <button class="close-btn" id="closeImport">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="import-instructions">
+                        <h3>How to Export from Apple Health:</h3>
+                        <ol>
+                            <li>Open the Health app on your iPhone</li>
+                            <li>Tap your profile picture in the top right</li>
+                            <li>Scroll down and tap "Export All Health Data"</li>
+                            <li>Tap "Export" and wait for the process to complete</li>
+                            <li>Save the export.zip file</li>
+                            <li>Extract the export.xml file</li>
+                            <li>Select the file below</li>
+                        </ol>
+                    </div>
+                    <input type="file" id="fileInput" accept=".xml,.zip" class="file-input">
+                    <button id="processFileBtn" class="primary-btn">Process Health Data</button>
+                    <div id="importProgress" class="import-progress"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="loading-overlay">
+            <div class="spinner"></div>
+            <p>Processing health data...</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="app.js"></script>
+    <script src="insights.js"></script>
+    <script>
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js')
+                .then(reg => console.log('Service Worker registered'))
+                .catch(err => console.log('Service Worker registration failed'));
+        }
+    </script>
+</body>
+</html>
