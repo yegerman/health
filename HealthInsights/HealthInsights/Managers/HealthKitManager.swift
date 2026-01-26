@@ -203,7 +203,7 @@ class HealthKitManager: ObservableObject {
 
             for sample in samples {
                 // Only count asleep time (not in bed)
-                if sample.value == HKCategoryValueSleepAnalysis.asleep.rawValue {
+                if sample.value == HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue {
                     let duration = sample.endDate.timeIntervalSince(sample.startDate)
                     let date = Calendar.current.startOfDay(for: sample.startDate)
                     dailySleep[date, default: 0] += duration
@@ -324,7 +324,7 @@ class HealthKitManager: ObservableObject {
 // MARK: - Data Models
 
 struct HealthDataPoint: Identifiable, Codable {
-    let id = UUID()
+    var id = UUID()
     let date: Date
     let value: Double
 
@@ -336,7 +336,7 @@ struct HealthDataPoint: Identifiable, Codable {
 }
 
 struct WorkoutData: Identifiable, Codable {
-    let id = UUID()
+    var id = UUID()
     let date: Date
     let type: String
     let duration: Double // minutes

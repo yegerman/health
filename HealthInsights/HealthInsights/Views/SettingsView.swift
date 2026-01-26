@@ -3,7 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var healthManager: HealthKitManager
     @AppStorage("notificationsEnabled") private var notificationsEnabled = false
-    @AppStorage("dailyInsightTime") private var dailyInsightTime = Date()
+    @State private var dailyInsightTime = Date()
     @State private var showingExportSheet = false
     @State private var showingClearAlert = false
 
