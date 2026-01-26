@@ -12,9 +12,9 @@ struct ContentView: View {
                 }
                 .tag(0)
 
-            InsightsView()
+            ChatInsightsView()
                 .tabItem {
-                    Label("Insights", systemImage: "lightbulb.fill")
+                    Label("AI Insights", systemImage: "sparkles")
                 }
                 .tag(1)
 

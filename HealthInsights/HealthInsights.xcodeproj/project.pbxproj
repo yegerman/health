@@ -16,6 +16,8 @@
 		A1000007000000000000001 /* HealthKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000007000000000000001 /* HealthKitManager.swift */; };
 		A1000008000000000000001 /* InsightsEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000008000000000000001 /* InsightsEngine.swift */; };
 		A1000009000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A2000009000000000000001 /* Assets.xcassets */; };
+		A1000010000000000000001 /* ChatInsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000012000000000000001 /* ChatInsightsView.swift */; };
+		A1000011000000000000001 /* ClaudeAPIManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000013000000000000001 /* ClaudeAPIManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,6 +33,8 @@
 		A2000009000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A2000010000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A2000011000000000000001 /* HealthInsights.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HealthInsights.entitlements; sourceTree = "<group>"; };
+		A2000012000000000000001 /* ChatInsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatInsightsView.swift; sourceTree = "<group>"; };
+		A2000013000000000000001 /* ClaudeAPIManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeAPIManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,6 +83,7 @@
 				A2000002000000000000001 /* ContentView.swift */,
 				A2000003000000000000001 /* DashboardView.swift */,
 				A2000004000000000000001 /* InsightsView.swift */,
+				A2000012000000000000001 /* ChatInsightsView.swift */,
 				A2000005000000000000001 /* TrendsView.swift */,
 				A2000006000000000000001 /* SettingsView.swift */,
 			);
@@ -90,6 +95,7 @@
 			children = (
 				A2000007000000000000001 /* HealthKitManager.swift */,
 				A2000008000000000000001 /* InsightsEngine.swift */,
+				A2000013000000000000001 /* ClaudeAPIManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -167,10 +173,12 @@
 				A1000002000000000000001 /* ContentView.swift in Sources */,
 				A1000003000000000000001 /* DashboardView.swift in Sources */,
 				A1000004000000000000001 /* InsightsView.swift in Sources */,
+				A1000010000000000000001 /* ChatInsightsView.swift in Sources */,
 				A1000005000000000000001 /* TrendsView.swift in Sources */,
 				A1000006000000000000001 /* SettingsView.swift in Sources */,
 				A1000007000000000000001 /* HealthKitManager.swift in Sources */,
 				A1000008000000000000001 /* InsightsEngine.swift in Sources */,
+				A1000011000000000000001 /* ClaudeAPIManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
