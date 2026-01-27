@@ -7,7 +7,7 @@ class ClaudeAPIManager: ObservableObject {
 
     // MARK: - API Configuration
     // TODO: Add your OpenRouter API key here
-    private let apiKey = "YOUR_OPENROUTER_API_KEY_HERE"  // Get your key from https://openrouter.ai/keys
+    private let apiKey = "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"  // Get your key from https://openrouter.ai/keys
     private let apiEndpoint = "https://openrouter.ai/api/v1/chat/completions"
     private let model = "google/gemini-3.0-flash-thinking-preview"
 
@@ -225,7 +225,7 @@ struct ChatMessage: Identifiable, Codable {
     var id = UUID()
     let role: MessageRole
     let content: String
-    let timestamp = Date()
+    var timestamp = Date()
 }
 
 enum MessageRole: String, Codable {
