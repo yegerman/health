@@ -3,33 +3,17 @@ import Foundation
 class ClaudeAPIManager: ObservableObject {
     @Published var messages: [ChatMessage] = []
     @Published var isLoading = false
-    @Published var apiKey: String = ""
     @Published var hasGreetedToday = false
 
+    // MARK: - API Configuration
+    // TODO: Add your OpenRouter API key here
+    private let apiKey = "YOUR_OPENROUTER_API_KEY_HERE"  // Get your key from https://openrouter.ai/keys
     private let apiEndpoint = "https://openrouter.ai/api/v1/chat/completions"
     private let model = "google/gemini-flash-1.5"
 
     init() {
-        loadAPIKey()
         loadMessages()
         checkDailyGreeting()
-    }
-
-    // MARK: - API Key Management
-
-    func loadAPIKey() {
-        if let key = UserDefaults.standard.string(forKey: "openrouter_api_key") {
-            apiKey = key
-        }
-    }
-
-    func saveAPIKey(_ key: String) {
-        apiKey = key
-        UserDefaults.standard.set(key, forKey: "openrouter_api_key")
-    }
-
-    func hasAPIKey() -> Bool {
-        return !apiKey.isEmpty
     }
 
     // MARK: - Proactive Greeting

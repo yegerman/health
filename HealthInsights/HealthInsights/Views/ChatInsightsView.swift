@@ -4,82 +4,63 @@ struct ChatInsightsView: View {
     @EnvironmentObject var healthManager: HealthKitManager
     @StateObject private var claudeAPI = ClaudeAPIManager()
     @State private var messageText = ""
-    @State private var showingAPIKeySheet = false
     @FocusState private var isInputFocused: Bool
 
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // Check for API key
-                if !claudeAPI.hasAPIKey() {
-                    apiKeySetupView
-                } else {
-                    // Chat messages
-                    ScrollViewReader { proxy in
-                        ScrollView {
-                            VStack(spacing: 16) {
-                                // Welcome message
-                                if claudeAPI.messages.isEmpty {
-                                    welcomeView
-                                }
-
-                                // Chat messages
-                                ForEach(claudeAPI.messages) { message in
-                                    MessageBubble(message: message)
-                                        .id(message.id)
-                                }
-
-                                // Loading indicator
-                                if claudeAPI.isLoading {
-                                    HStack {
-                                        ProgressView()
-                                        Text("Analyzing your health data...")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    }
-                                    .padding()
-                                }
+                // Chat messages
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(spacing: 16) {
+                            // Welcome message
+                            if claudeAPI.messages.isEmpty {
+                                welcomeView
                             }
-                            .padding()
-                        }
-                        .onChange(of: claudeAPI.messages.count) { _ in
-                            if let lastMessage = claudeAPI.messages.last {
-                                withAnimation {
-                                    proxy.scrollTo(lastMessage.id, anchor: .bottom)
+
+                            // Chat messages
+                            ForEach(claudeAPI.messages) { message in
+                                MessageBubble(message: message)
+                                    .id(message.id)
+                            }
+
+                            // Loading indicator
+                            if claudeAPI.isLoading {
+                                HStack {
+                                    ProgressView()
+                                    Text("Analyzing your health data...")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
                                 }
+                                .padding()
+                            }
+                        }
+                        .padding()
+                    }
+                    .onChange(of: claudeAPI.messages.count) { _ in
+                        if let lastMessage = claudeAPI.messages.last {
+                            withAnimation {
+                                proxy.scrollTo(lastMessage.id, anchor: .bottom)
                             }
                         }
                     }
-
-                    Divider()
-
-                    // Input area
-                    inputView
                 }
+
+                Divider()
+
+                // Input area
+                inputView
             }
             .navigationTitle("AI Health Insights")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Menu {
-                        Button(action: {
-                            showingAPIKeySheet = true
-                        }) {
-                            Label("API Settings", systemImage: "key")
-                        }
-
-                        Button(action: {
-                            claudeAPI.clearMessages()
-                        }) {
-                            Label("Clear Chat", systemImage: "trash")
-                        }
-                    } label: {
-                        Image(systemName: "ellipsis.circle")
+                    Button(action: {
+                        claudeAPI.clearMessages()
+                    }) {
+                        Image(systemName: "trash")
                     }
                 }
-            }
-            .sheet(isPresented: $showingAPIKeySheet) {
-                APIKeySetupSheet(claudeAPI: claudeAPI)
             }
         }
         .onAppear {
@@ -198,44 +179,6 @@ struct ChatInsightsView: View {
         }
         .padding()
         .background(Color(.systemBackground))
-    }
-
-    // MARK: - API Key Setup
-
-    var apiKeySetupView: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "key.fill")
-                .font(.system(size: 60))
-                .foregroundColor(.pink)
-
-            Text("OpenRouter API Key Required")
-                .font(.title2)
-                .fontWeight(.bold)
-
-            Text("To use AI-powered health insights with Gemini Flash 1.5, you need an OpenRouter API key.")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-
-            Button(action: {
-                showingAPIKeySheet = true
-            }) {
-                Text("Set Up API Key")
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.pink)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
-            }
-            .padding(.horizontal)
-
-            Link("Get API Key from OpenRouter", destination: URL(string: "https://openrouter.ai/keys")!)
-                .font(.caption)
-                .foregroundColor(.blue)
-        }
-        .padding()
     }
 
     // MARK: - Actions
@@ -361,89 +304,6 @@ struct PresetButton: View {
             .frame(width: 120, height: 100)
             .background(Color(.systemGray6))
             .cornerRadius(12)
-        }
-    }
-}
-
-// MARK: - API Key Setup Sheet
-
-struct APIKeySetupSheet: View {
-    @ObservedObject var claudeAPI: ClaudeAPIManager
-    @Environment(\.dismiss) var dismiss
-    @State private var apiKeyInput = ""
-
-    var body: some View {
-        NavigationView {
-            Form {
-                Section {
-                    Text("Enter your OpenRouter API key to enable AI-powered health insights with Gemini Flash 1.5.")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-
-                Section("API Key") {
-                    SecureField("sk-or-v1-...", text: $apiKeyInput)
-                        .textContentType(.password)
-                        .autocorrectionDisabled()
-
-                    Link("Get API Key from OpenRouter →", destination: URL(string: "https://openrouter.ai/keys")!)
-                        .font(.caption)
-                }
-
-                Section("Model Information") {
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("Model:")
-                                .fontWeight(.medium)
-                            Spacer()
-                            Text("Gemini Flash 1.5")
-                                .foregroundColor(.secondary)
-                        }
-
-                        HStack {
-                            Text("Cost:")
-                                .fontWeight(.medium)
-                            Spacer()
-                            Text("~$0.0001 per message")
-                                .foregroundColor(.secondary)
-                        }
-
-                        Text("Very affordable for daily use!")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-
-                Section {
-                    Button("Save API Key") {
-                        claudeAPI.saveAPIKey(apiKeyInput)
-                        dismiss()
-                    }
-                    .frame(maxWidth: .infinity)
-                    .disabled(apiKeyInput.isEmpty)
-                }
-
-                Section {
-                    Text("Privacy Note")
-                        .font(.headline)
-
-                    Text("Your health data will be sent to OpenRouter (using Google's Gemini) for analysis. OpenRouter does not train on user data. For maximum privacy, consider using a self-hosted LLM solution.")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-            }
-            .navigationTitle("API Settings")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-            }
-            .onAppear {
-                apiKeyInput = claudeAPI.apiKey
-            }
         }
     }
 }
