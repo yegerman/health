@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 
 # API Configuration
 API_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
-MODEL = "google/gemini-3.0-flash-thinking-preview"
+MODEL = "google/gemini-3-flash-preview"
 API_KEY = "YOUR_OPENROUTER_API_KEY_HERE"  # Replace with your actual key
 
 def create_mockup_health_data():
