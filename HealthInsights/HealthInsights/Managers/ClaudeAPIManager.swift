@@ -9,7 +9,7 @@ class ClaudeAPIManager: ObservableObject {
     // TODO: Add your OpenRouter API key here
     private let apiKey = "YOUR_OPENROUTER_API_KEY_HERE"  // Get your key from https://openrouter.ai/keys
     private let apiEndpoint = "https://openrouter.ai/api/v1/chat/completions"
-    private let model = "google/gemini-3.0-flash-preview"
+    private let model = "google/gemini-3.0-flash-thinking-preview"
 
     init() {
         loadMessages()
