@@ -23,11 +23,6 @@ struct ChatInsightsView: View {
                                     welcomeView
                                 }
 
-                                // Preset questions (show when chat is empty)
-                                if claudeAPI.messages.isEmpty {
-                                    presetQuestionsView
-                                }
-
                                 // Chat messages
                                 ForEach(claudeAPI.messages) { message in
                                     MessageBubble(message: message)
@@ -96,21 +91,34 @@ struct ChatInsightsView: View {
 
     var welcomeView: some View {
         VStack(spacing: 16) {
-            Image(systemName: "brain.head.profile")
+            Image(systemName: "heart.text.square.fill")
                 .font(.system(size: 60))
                 .foregroundColor(.pink)
 
-            Text("AI Health Insights")
+            Text("Your AI Health Coach")
                 .font(.title2)
                 .fontWeight(.bold)
 
-            Text("Ask me anything about your health data! I'll analyze your steps, heart rate, sleep, and activity to provide personalized insights.")
+            Text("I'm here to check in on your health, answer questions, and provide personalized insights based on your Apple Health data.")
                 .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+
+            Text("I'll greet you each morning with observations about your health! 👋")
+                .font(.caption)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
         }
         .padding()
+        .onAppear {
+            // Generate proactive greeting when user opens the app
+            Task {
+                let healthContext = buildHealthContext()
+                await claudeAPI.generateProactiveGreeting(healthContext: healthContext, userName: "Mor")
+            }
+        }
     }
 
     // MARK: - Preset Questions
@@ -200,11 +208,11 @@ struct ChatInsightsView: View {
                 .font(.system(size: 60))
                 .foregroundColor(.pink)
 
-            Text("Claude API Key Required")
+            Text("OpenRouter API Key Required")
                 .font(.title2)
                 .fontWeight(.bold)
 
-            Text("To use AI-powered health insights, you need a Claude API key from Anthropic.")
+            Text("To use AI-powered health insights with Gemini Flash 1.5, you need an OpenRouter API key.")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -223,7 +231,7 @@ struct ChatInsightsView: View {
             }
             .padding(.horizontal)
 
-            Link("Get API Key from Anthropic", destination: URL(string: "https://console.anthropic.com/")!)
+            Link("Get API Key from OpenRouter", destination: URL(string: "https://openrouter.ai/keys")!)
                 .font(.caption)
                 .foregroundColor(.blue)
         }
@@ -368,18 +376,42 @@ struct APIKeySetupSheet: View {
         NavigationView {
             Form {
                 Section {
-                    Text("Enter your Claude API key from Anthropic to enable AI-powered health insights.")
+                    Text("Enter your OpenRouter API key to enable AI-powered health insights with Gemini Flash 1.5.")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
 
                 Section("API Key") {
-                    SecureField("sk-ant-api03-...", text: $apiKeyInput)
+                    SecureField("sk-or-v1-...", text: $apiKeyInput)
                         .textContentType(.password)
                         .autocorrectionDisabled()
 
-                    Link("Get API Key from Anthropic →", destination: URL(string: "https://console.anthropic.com/")!)
+                    Link("Get API Key from OpenRouter →", destination: URL(string: "https://openrouter.ai/keys")!)
                         .font(.caption)
+                }
+
+                Section("Model Information") {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Model:")
+                                .fontWeight(.medium)
+                            Spacer()
+                            Text("Gemini Flash 1.5")
+                                .foregroundColor(.secondary)
+                        }
+
+                        HStack {
+                            Text("Cost:")
+                                .fontWeight(.medium)
+                            Spacer()
+                            Text("~$0.0001 per message")
+                                .foregroundColor(.secondary)
+                        }
+
+                        Text("Very affordable for daily use!")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                 }
 
                 Section {
@@ -395,7 +427,7 @@ struct APIKeySetupSheet: View {
                     Text("Privacy Note")
                         .font(.headline)
 
-                    Text("Your health data will be sent to Anthropic's Claude API for analysis. Anthropic does not train on API data. For maximum privacy, consider using a self-hosted LLM solution.")
+                    Text("Your health data will be sent to OpenRouter (using Google's Gemini) for analysis. OpenRouter does not train on user data. For maximum privacy, consider using a self-hosted LLM solution.")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }

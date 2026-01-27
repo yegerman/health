@@ -4,78 +4,156 @@ class ClaudeAPIManager: ObservableObject {
     @Published var messages: [ChatMessage] = []
     @Published var isLoading = false
     @Published var apiKey: String = ""
+    @Published var hasGreetedToday = false
 
-    private let apiEndpoint = "https://api.anthropic.com/v1/messages"
-    private let model = "claude-3-5-sonnet-20241022"
+    private let apiEndpoint = "https://openrouter.ai/api/v1/chat/completions"
+    private let model = "google/gemini-flash-1.5"
 
     init() {
         loadAPIKey()
+        loadMessages()
+        checkDailyGreeting()
     }
 
     // MARK: - API Key Management
 
     func loadAPIKey() {
-        if let key = UserDefaults.standard.string(forKey: "claude_api_key") {
+        if let key = UserDefaults.standard.string(forKey: "openrouter_api_key") {
             apiKey = key
         }
     }
 
     func saveAPIKey(_ key: String) {
         apiKey = key
-        UserDefaults.standard.set(key, forKey: "claude_api_key")
+        UserDefaults.standard.set(key, forKey: "openrouter_api_key")
     }
 
     func hasAPIKey() -> Bool {
         return !apiKey.isEmpty
     }
 
-    // MARK: - Chat
+    // MARK: - Proactive Greeting
 
-    func sendMessage(_ userMessage: String, healthContext: String) async {
-        // Add user message
-        let userMsg = ChatMessage(role: .user, content: userMessage)
+    func checkDailyGreeting() {
+        let lastGreetingDate = UserDefaults.standard.string(forKey: "last_greeting_date")
+        let today = Date().formatted(date: .abbreviated, time: .omitted)
+
+        if lastGreetingDate != today {
+            hasGreetedToday = false
+        } else {
+            hasGreetedToday = true
+        }
+    }
+
+    func generateProactiveGreeting(healthContext: String, userName: String = "there") async {
+        guard !hasGreetedToday else { return }
+
         await MainActor.run {
-            messages.append(userMsg)
             isLoading = true
         }
 
-        // Build conversation history
+        // Build proactive greeting request
+        let greetingPrompt = """
+        Analyze the user's health data and greet them with a personalized, caring message.
+
+        Be specific about what you notice in their data. If something looks concerning,
+        mention it gently and ask how they're feeling. Be warm and supportive.
+
+        Example: "Good morning! I noticed your sleep was only 5.2 hours last night and
+        your resting heart rate is elevated at 72 bpm. How are you feeling today?"
+
+        Keep it natural and conversational, not clinical.
+        """
+
+        await sendMessage(greetingPrompt, healthContext: healthContext, isProactive: true)
+
+        // Mark as greeted
+        let today = Date().formatted(date: .abbreviated, time: .omitted)
+        UserDefaults.standard.set(today, forKey: "last_greeting_date")
+        await MainActor.run {
+            hasGreetedToday = true
+        }
+    }
+
+    // MARK: - Chat
+
+    func sendMessage(_ userMessage: String, healthContext: String, isProactive: Bool = false) async {
+        // Add user message (unless it's proactive greeting)
+        if !isProactive {
+            let userMsg = ChatMessage(role: .user, content: userMessage)
+            await MainActor.run {
+                messages.append(userMsg)
+                isLoading = true
+            }
+        } else {
+            await MainActor.run {
+                isLoading = true
+            }
+        }
+
+        // Build conversation with FULL history (no limit)
         var conversationMessages: [[String: Any]] = []
 
-        // Add conversation history (last 10 messages)
-        let recentMessages = messages.suffix(10)
-        for msg in recentMessages {
+        // Add ALL conversation history
+        for msg in messages {
             conversationMessages.append([
                 "role": msg.role.rawValue,
                 "content": msg.content
             ])
         }
 
-        // Prepare request
+        // Add current message if not proactive
+        if !isProactive {
+            conversationMessages.append([
+                "role": "user",
+                "content": userMessage
+            ])
+        }
+
+        // Prepare system prompt
         let systemPrompt = """
-        You are a health insights assistant analyzing Apple Health data. You provide personalized,
-        evidence-based health insights and answer questions about the user's health metrics.
+        You are Mor's personal AI health coach and diagnostic assistant. You have access to
+        their complete Apple Health data and conversation history.
+
+        Your Personality:
+        - Caring, warm, and supportive
+        - Proactive - you initiate check-ins
+        - Observant - you notice patterns
+        - Diagnostic - you ask questions to understand symptoms
+        - Evidence-based - you reference actual data
+
+        Your Capabilities:
+        1. **Proactive Check-ins**: Greet Mor each morning with observations about their health
+        2. **Pattern Recognition**: Notice changes in sleep, heart rate, activity, etc.
+        3. **Diagnostic Conversations**: Ask questions to understand how they feel
+        4. **Personalized Advice**: Give specific, actionable recommendations
+        5. **Long-term Memory**: Remember all previous conversations and feedback
 
         Guidelines:
-        - Be encouraging and supportive
-        - Reference specific data points when making observations
-        - Provide actionable recommendations
-        - Mention when medical consultation may be needed
-        - Focus on trends and patterns
-        - Use emojis appropriately for engagement
+        - Always address Mor by name when greeting
+        - Be specific with data (e.g., "I see your sleep was 6.2 hours" not "low sleep")
+        - Ask follow-up questions based on health signals
+        - If something seems off, ask "How are you feeling?" or "How's your energy?"
+        - Track symptoms over time using conversation history
+        - Suggest when to see a doctor if patterns are concerning
+        - Use emojis naturally but not excessively
+        - Be conversational, not clinical
 
-        Here is the user's current health data:
-
+        Current Health Data:
         \(healthContext)
 
-        Analyze this data and provide insights based on the user's questions.
+        Remember: You're having a continuous conversation. Reference past discussions and
+        track how Mor is doing over time.
         """
 
         let requestBody: [String: Any] = [
             "model": model,
-            "max_tokens": 1024,
-            "system": systemPrompt,
-            "messages": conversationMessages
+            "messages": [
+                [
+                    "role": "system",
+                    "content": systemPrompt
+                ]
+            ] + conversationMessages
         ]
 
         // Make API call
@@ -86,9 +164,9 @@ class ClaudeAPIManager: ObservableObject {
 
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
-            request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
-            request.setValue("application/json", forHTTPHeaderField: "content-type")
-            request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
+            request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue("HealthInsights/1.0", forHTTPHeaderField: "HTTP-Referer")
             request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
 
             let (data, response) = try await URLSession.shared.data(for: request)
@@ -103,11 +181,12 @@ class ClaudeAPIManager: ObservableObject {
                 throw APIError.apiError(statusCode: httpResponse.statusCode, message: errorText)
             }
 
-            // Parse response
+            // Parse OpenRouter response format
             if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let content = json["content"] as? [[String: Any]],
-               let firstContent = content.first,
-               let text = firstContent["text"] as? String {
+               let choices = json["choices"] as? [[String: Any]],
+               let firstChoice = choices.first,
+               let message = firstChoice["message"] as? [String: Any],
+               let text = message["content"] as? String {
 
                 let assistantMsg = ChatMessage(role: .assistant, content: text)
 
@@ -133,7 +212,7 @@ class ClaudeAPIManager: ObservableObject {
         }
     }
 
-    // MARK: - Message Persistence
+    // MARK: - Message Persistence (Full History)
 
     func saveMessages() {
         if let encoded = try? JSONEncoder().encode(messages) {
@@ -151,6 +230,8 @@ class ClaudeAPIManager: ObservableObject {
     func clearMessages() {
         messages = []
         UserDefaults.standard.removeObject(forKey: "chat_messages")
+        UserDefaults.standard.removeObject(forKey: "last_greeting_date")
+        hasGreetedToday = false
     }
 }
 
